@@ -19,7 +19,6 @@ type Server interface {
 
 var _ Server = &Core{}
 
-type Middleware HandleFunc
 type Core struct {
 	router
 	middlewares []Middleware
@@ -27,24 +26,31 @@ type Core struct {
 
 func NewCore() *Core {
 	return &Core{
-		router: newRouter(),
+		router:      newRouter(),
+		middlewares: []Middleware{},
 	}
 }
 
 // ServeHTTP 处理请求的入口
 func (c *Core) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("start ServeHTTP")
 	ctx := NewContext(request, writer)
 	// 寻找路由
 	mn, ok := c.FindRouteNodeByRequest(request)
-	fmt.Println("mn:", mn)
 	if !ok {
 		// 未到路由 直接返回
 		ctx.respStatusCode = 404
 		return
 	}
-	// todo 设置中间件
-	ctx.SetHandlers([]HandleFunc{mn.n.handler})
+
+	allHandlers := make([]HandleFunc, 0, 8)
+	for _, middleware := range c.middlewares {
+		allHandlers = append(allHandlers, (HandleFunc)(middleware))
+	}
+	for _, middleware := range mn.matchMiddlewares {
+		allHandlers = append(allHandlers, (HandleFunc)(middleware))
+	}
+	allHandlers = append(allHandlers, mn.n.handler)
+	ctx.SetHandlers(allHandlers)
 	// 设置路由参数
 	ctx.SetParams(mn.pathParams)
 	// 调用路由函数，如果返回err 代表存在内部错误，返回500状态码
@@ -95,4 +101,7 @@ func (c *Core) Use(middlewares ...Middleware) {
 
 func (c *Core) UsePath(method string, path string, mws ...Middleware) {
 	c.addRoute(method, path, nil, mws...)
+}
+func (c *Core) Group(prefix string) Grouper {
+	return NewGroup(c, prefix)
 }

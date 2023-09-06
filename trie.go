@@ -31,7 +31,7 @@ func (t *Tree) matchNode(path string) *matchNode {
 }
 func (root *node) findMdls(segs []string) []Middleware {
 	queue := []*node{root}
-	res := make([]Middleware, 0, 16)
+	res := make([]Middleware, 0, 8)
 	for i := 0; i < len(segs); i++ {
 		seg := segs[i]
 		var children []*node
@@ -49,7 +49,10 @@ func (root *node) findMdls(segs []string) []Middleware {
 			res = append(res, cur.mws...)
 		}
 	}
-	return res
+	if len(res) > 0 {
+		return res
+	}
+	return []Middleware{}
 }
 
 func (n *node) childrenOf(path string) []*node {
@@ -78,8 +81,6 @@ type node struct {
 	handler HandleFunc
 	// 注册在该节点上的 middleware
 	mws []Middleware
-	// 该节点匹配到的middleware 即实际运行的
-	matchedMdls []Middleware
 	// children 子节点
 	// 子节点的 path => node
 	children map[string]*node
@@ -155,7 +156,7 @@ func (n *node) childOf(path string) (*node, bool) {
 type matchNode struct {
 	n                *node
 	pathParams       map[string]string
-	matchMiddlewares []Middleware
+	matchMiddlewares []Middleware // 可路由(匹配到的)中间件
 }
 
 func (m *matchNode) addValue(key string, value string) {

@@ -25,26 +25,30 @@ func NewContext(r *http.Request, w http.ResponseWriter) *Context {
 }
 
 // 为context设置handlers
-func (ctx *Context) SetHandlers(handlers []HandleFunc) {
-	if ctx.handlers == nil {
-		ctx.handlers = handlers
+func (c *Context) SetHandlers(handlers []HandleFunc) {
+	if c.handlers == nil {
+		c.handlers = handlers
 		return
 	}
-	ctx.handlers = append(ctx.handlers, handlers...)
+	c.handlers = append(c.handlers, handlers...)
 }
 
 // 设置参数
-func (ctx *Context) SetParams(params map[string]string) {
-	ctx.params = params
+func (c *Context) SetParams(params map[string]string) {
+	c.params = params
 }
 
 // 核心函数，调用context的下一个函数
-func (ctx *Context) Next() error {
-	ctx.index++
-	if ctx.index < len(ctx.handlers) {
-		if err := ctx.handlers[ctx.index](ctx); err != nil {
+func (c *Context) Next() error {
+	c.index++
+	if c.index < len(c.handlers) {
+		if err := c.handlers[c.index](c); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (c *Context) GetRequest() *http.Request {
+	return c.req
 }
