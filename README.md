@@ -24,4 +24,7 @@ mini web server实现
   * 不支持:
     * (/a/*/c, mws1),(/a/b/c, mws2), /a/b/c 执行ms2
 
+3.支持group分组
+* 基于group的uri前缀
+* 不支持group的中间件(可使用可路由中间件替代)
 ## 快速使用：
