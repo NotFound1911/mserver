@@ -106,7 +106,7 @@ func (r *router) findRoute(method string, path string) (*matchNode, bool) {
 		return nil, false
 	}
 	if path == "/" {
-		return &matchNode{n: tree.Root}, true
+		return &matchNode{n: tree.Root, matchMiddlewares: tree.Root.mws}, tree.Root.handler != nil
 	}
 	fNode := tree.matchNode(path)
 	if fNode == nil || fNode.n.handler == nil {

@@ -1,6 +1,7 @@
 package mserver
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 )
@@ -24,4 +25,23 @@ func registerRouter(core *Core) {
 	}
 	core.addRoute(http.MethodGet, "/", mockHandler)
 	core.addRoute(http.MethodGet, "/user/test", mockHandler)
+}
+
+func Test_Core_Server_route(t *testing.T) {
+	core := NewCore()
+	mw := func(ctx *Context) error {
+		fmt.Println("this is mid")
+		ctx.Next()
+		return nil
+	}
+	core.Get("/user/home", func(ctx *Context) error {
+		ctx.SetStatus(http.StatusOK).Text("this is /usr/home")
+		return nil
+	})
+	core.Get("/user/school", func(ctx *Context) error {
+		ctx.SetStatus(http.StatusOK).Text("this is /user/school")
+		return nil
+	})
+	core.UsePath(http.MethodGet, "/user/*", mw)
+	core.Start(":8888")
 }

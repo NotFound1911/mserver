@@ -38,7 +38,7 @@ func (c *Core) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	mn, ok := c.FindRouteNodeByRequest(request)
 	if !ok {
 		// 未到路由 直接返回
-		ctx.respStatusCode = 404
+		ctx.SetStatus(http.StatusNotFound).Text("%s not found", request.URL)
 		return
 	}
 
@@ -55,7 +55,7 @@ func (c *Core) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	ctx.SetParams(mn.pathParams)
 	// 调用路由函数，如果返回err 代表存在内部错误，返回500状态码
 	if err := ctx.Next(); err != nil {
-		ctx.respStatusCode = 500
+		ctx.SetStatus(http.StatusInternalServerError)
 		return
 	}
 }
