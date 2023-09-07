@@ -28,3 +28,35 @@ mini web server实现
 * 基于group的uri前缀
 * 不支持group的中间件(可使用可路由中间件替代)
 ## 快速使用：
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/NotFound1911/mserver"
+	"github.com/NotFound1911/mserver/middleware/cost"
+	"github.com/NotFound1911/mserver/middleware/recovery"
+	"net/http"
+)
+
+func main() {
+	core := mserver.NewCore()
+	mw := func(ctx *mserver.Context) error {
+		fmt.Println("this is mid")
+		ctx.Next()
+		return nil
+	}
+	core.Use(recovery.Recovery(), cost.Cost())
+	core.Get("/user/home", func(ctx *mserver.Context) error {
+		ctx.SetStatus(http.StatusOK).Text("this is /usr/home")
+		return nil
+	})
+	core.Get("/user/school", func(ctx *mserver.Context) error {
+		ctx.SetStatus(http.StatusOK).Text("this is /user/school")
+		return nil
+	})
+	core.UsePath(http.MethodGet, "/user/*", mw)
+	core.Start(":8888")
+}
+
+```
