@@ -64,6 +64,11 @@ func (c *Core) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 func (c *Core) Start(addr string) error {
 	return http.ListenAndServe(addr, c)
 }
+
+func (c *Core) StartTLS(addr, certFile, keyFile string) error {
+	return http.ListenAndServeTLS(addr, certFile, keyFile, c)
+}
+
 func (c *Core) addRoute(method string, path string, handler HandleFunc, mws ...Middleware) {
 	if err := c.router.addRoute(method, path, handler, mws...); err != nil {
 		panic(fmt.Sprintf("add route err:%v", err))
