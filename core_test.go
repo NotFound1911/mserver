@@ -29,10 +29,14 @@ func registerRouter(core *Core) {
 
 func Test_Core_Server_route(t *testing.T) {
 	core := NewCore()
-	mw := func(ctx *Context) error {
-		fmt.Println("this is mid")
-		ctx.Next()
-		return nil
+	mw := func(next HandleFunc) HandleFunc {
+		return func(ctx *Context) error {
+			fmt.Println("this is mid")
+			if err := next(ctx); err != nil {
+				return err
+			}
+			return nil
+		}
 	}
 	core.Get("/user/home", func(ctx *Context) error {
 		ctx.SetStatus(http.StatusOK).Text("this is /usr/home")
