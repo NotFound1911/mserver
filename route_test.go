@@ -533,12 +533,12 @@ func Test_findRoute(t *testing.T) {
 }
 func Test_findRoute_mws(t *testing.T) {
 	mockHandler := func(ctx *Context) error { return nil }
-	mockHandler1 := func(ctx *Context) error { return nil }
-	mockHandler2 := func(ctx *Context) error { return nil }
-	mockHandler3 := func(ctx *Context) error { return nil }
-	mockHandler4 := func(ctx *Context) error { return nil }
-	mockHandler5 := func(ctx *Context) error { return nil }
-	mockHandler6 := func(ctx *Context) error { return nil }
+	mockHandler1 := func(next HandleFunc) HandleFunc { return next }
+	mockHandler2 := func(next HandleFunc) HandleFunc { return next }
+	mockHandler3 := func(next HandleFunc) HandleFunc { return next }
+	mockHandler4 := func(next HandleFunc) HandleFunc { return next }
+	mockHandler5 := func(next HandleFunc) HandleFunc { return next }
+	mockHandler6 := func(next HandleFunc) HandleFunc { return next }
 	// 可路由中间件测试
 	testRoutes := []struct {
 		method string

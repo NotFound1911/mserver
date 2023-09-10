@@ -34,30 +34,29 @@ func NewCore() *Core {
 // ServeHTTP 处理请求的入口
 func (c *Core) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	ctx := NewContext(request, writer)
+	root := c.serve
+	for i := len(c.middlewares) - 1; i >= 0; i-- {
+		root = c.middlewares[i](root)
+	}
+	root(ctx)
+}
+
+func (c *Core) serve(ctx *Context) error {
 	// 寻找路由
-	mn, ok := c.FindRouteNodeByRequest(request)
+	mn, ok := c.FindRouteNodeByRequest(ctx.GetRequest())
 	if !ok {
 		// 未到路由 直接返回
-		ctx.SetStatus(http.StatusNotFound).Text("%s not found", request.URL)
-		return
+		ctx.SetStatus(http.StatusNotFound).Text("%s not found", ctx.GetRequest().URL)
+		return fmt.Errorf("未找到路由")
 	}
-
-	allHandlers := make([]HandleFunc, 0, 8)
-	for _, middleware := range c.middlewares {
-		allHandlers = append(allHandlers, (HandleFunc)(middleware))
-	}
-	for _, middleware := range mn.matchMiddlewares {
-		allHandlers = append(allHandlers, (HandleFunc)(middleware))
-	}
-	allHandlers = append(allHandlers, mn.n.handler)
-	ctx.SetHandlers(allHandlers)
-	// 设置路由参数
 	ctx.SetParams(mn.pathParams)
-	// 调用路由函数，如果返回err 代表存在内部错误，返回500状态码
-	if err := ctx.Next(); err != nil {
-		ctx.SetStatus(http.StatusInternalServerError)
-		return
+	ctx.MatchedRoute = mn.n.path
+	handler := mn.n.handler
+	for i := len(mn.matchMiddlewares) - 1; i >= 0; i-- {
+		handler = mn.matchMiddlewares[i](handler)
 	}
+	handler(ctx)
+	return nil
 }
 
 // 启动服务

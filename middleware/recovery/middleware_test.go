@@ -7,6 +7,7 @@ import (
 
 func TestMiddlewares_Recover(t *testing.T) {
 	c := mserver.NewCore()
+
 	c.Get("/test/panic", func(ctx *mserver.Context) error {
 		panic("test panic")
 		return nil
