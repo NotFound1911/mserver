@@ -12,8 +12,9 @@ type Context struct {
 	params         map[string]string // url路由匹配的参数
 	MatchedRoute   string
 
-	index    int // 当前请求调用到调用链的哪个节点
-	handlers []HandleFunc
+	index        int // 当前请求调用到调用链的哪个节点
+	handlers     []HandleFunc
+	CustomValues map[string]any // 自定义数据
 }
 
 // NewContext 初始化一个Context
@@ -25,31 +26,23 @@ func NewContext(r *http.Request, w http.ResponseWriter) *Context {
 	}
 }
 
-// 为context设置handlers
-func (c *Context) SetHandlers(handlers []HandleFunc) {
-	if c.handlers == nil {
-		c.handlers = handlers
+// SetHandlers 为context设置handlers
+func (ctx *Context) SetHandlers(handlers []HandleFunc) {
+	if ctx.handlers == nil {
+		ctx.handlers = handlers
 		return
 	}
-	c.handlers = append(c.handlers, handlers...)
+	ctx.handlers = append(ctx.handlers, handlers...)
 }
 
-// 设置参数
-func (c *Context) SetParams(params map[string]string) {
-	c.params = params
+// SetParams 设置参数
+func (ctx *Context) SetParams(params map[string]string) {
+	ctx.params = params
 }
 
-// 核心函数，调用context的下一个函数
-func (c *Context) Next() error {
-	c.index++
-	if c.index < len(c.handlers) {
-		if err := c.handlers[c.index](c); err != nil {
-			return err
-		}
-	}
-	return nil
+func (ctx *Context) GetRequest() *http.Request {
+	return ctx.req
 }
-
-func (c *Context) GetRequest() *http.Request {
-	return c.req
+func (ctx *Context) GetResponse() http.ResponseWriter {
+	return ctx.resp
 }

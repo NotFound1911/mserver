@@ -30,67 +30,67 @@ type Responser interface {
 	SetOkStatus() Responser
 }
 
-func (c *Context) SetHeader(key string, val string) Responser {
-	c.resp.Header().Add(key, val)
-	return c
+func (ctx *Context) SetHeader(key string, val string) Responser {
+	ctx.resp.Header().Add(key, val)
+	return ctx
 }
-func (c *Context) Json(obj interface{}) Responser {
+func (ctx *Context) Json(obj interface{}) Responser {
 	byt, err := json.Marshal(obj)
 	if err != nil {
-		return c.SetStatus(http.StatusInternalServerError)
+		return ctx.SetStatus(http.StatusInternalServerError)
 	}
-	c.SetHeader("Content-Type", "application/json")
-	c.resp.Write(byt)
-	return c
+	ctx.SetHeader("Content-Type", "application/json")
+	ctx.resp.Write(byt)
+	return ctx
 }
 
-func (c *Context) SetStatus(code int) Responser {
-	c.resp.WriteHeader(code)
-	return c
+func (ctx *Context) SetStatus(code int) Responser {
+	ctx.resp.WriteHeader(code)
+	return ctx
 }
-func (c *Context) SetOkStatus() Responser {
-	c.resp.WriteHeader(http.StatusOK)
-	return c
+func (ctx *Context) SetOkStatus() Responser {
+	ctx.resp.WriteHeader(http.StatusOK)
+	return ctx
 }
-func (c *Context) Redirect(path string) Responser {
-	http.Redirect(c.resp, c.req, path, http.StatusMovedPermanently)
-	return c
+func (ctx *Context) Redirect(path string) Responser {
+	http.Redirect(ctx.resp, ctx.req, path, http.StatusMovedPermanently)
+	return ctx
 }
-func (c *Context) Xml(obj interface{}) Responser {
+func (ctx *Context) Xml(obj interface{}) Responser {
 	byt, err := xml.Marshal(obj)
 	if err != nil {
-		return c.SetStatus(http.StatusInternalServerError)
+		return ctx.SetStatus(http.StatusInternalServerError)
 	}
-	c.SetHeader("Content-Type", "application/html")
-	c.resp.Write(byt)
-	return c
+	ctx.SetHeader("Content-Type", "application/html")
+	ctx.resp.Write(byt)
+	return ctx
 }
-func (c *Context) Html(file string, obj interface{}) Responser {
+func (ctx *Context) Html(file string, obj interface{}) Responser {
 	// 读取模版文件，创建template实例
 	t, err := template.New("output").ParseFiles(file)
 	if err != nil {
-		return c
+		return ctx
 	}
 	// 执行Execute方法将obj和模版进行结合
-	if err := t.Execute(c.resp, obj); err != nil {
-		return c
+	if err := t.Execute(ctx.resp, obj); err != nil {
+		return ctx
 	}
 
-	c.SetHeader("Content-Type", "application/html")
-	return c
+	ctx.SetHeader("Content-Type", "application/html")
+	return ctx
 }
-func (c *Context) Text(format string, values ...interface{}) Responser {
+func (ctx *Context) Text(format string, values ...interface{}) Responser {
 	out := fmt.Sprintf(format, values...)
-	c.SetHeader("Content-Type", "application/text")
-	c.resp.Write([]byte(out))
-	return c
+	ctx.SetHeader("Content-Type", "application/text")
+	ctx.resp.Write([]byte(out))
+	return ctx
 }
-func (c *Context) SetCookie(key string, val string, maxAge int, path string,
+func (ctx *Context) SetCookie(key string, val string, maxAge int, path string,
 	domain string, secure bool, httpOnly bool) Responser {
 	if path == "" {
 		path = "/"
 	}
-	http.SetCookie(c.resp, &http.Cookie{
+	http.SetCookie(ctx.resp, &http.Cookie{
 		Name:     key,
 		Value:    url.QueryEscape(val),
 		MaxAge:   maxAge,
@@ -100,5 +100,5 @@ func (c *Context) SetCookie(key string, val string, maxAge int, path string,
 		Secure:   secure,
 		HttpOnly: httpOnly,
 	})
-	return c
+	return ctx
 }
