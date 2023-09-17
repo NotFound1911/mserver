@@ -59,7 +59,7 @@ func (c *Core) serve(ctx *Context) error {
 	return nil
 }
 
-// 启动服务
+// Start 启动服务
 func (c *Core) Start(addr string) error {
 	return http.ListenAndServe(addr, c)
 }
