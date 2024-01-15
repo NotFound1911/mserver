@@ -50,7 +50,7 @@ func main() {
       return nil
     }
   }
-  core.Use(recovery.Recovery(), cost.Cost())
+  core.Use(recovery.MiddlewareBuilder{}.Build(), cost.MiddlewareBuilder{}.Build())
   core.Get("/user/home", func(ctx *mserver.Context) error {
     ctx.SetStatus(http.StatusOK).Text("this is /usr/home")
     return nil

@@ -46,3 +46,11 @@ func (ctx *Context) GetRequest() *http.Request {
 func (ctx *Context) GetResponse() http.ResponseWriter {
 	return ctx.resp
 }
+
+func (ctx *Context) SetRequest(req *http.Request) {
+	ctx.req = req
+}
+
+func (ctx *Context) GetRespStatusCode() int {
+	return ctx.respStatusCode
+}
