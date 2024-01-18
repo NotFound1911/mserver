@@ -40,12 +40,12 @@ func (ctx *Context) Json(obj interface{}) Responser {
 		return ctx.SetStatus(http.StatusInternalServerError)
 	}
 	ctx.SetHeader("Content-Type", "application/json")
-	ctx.resp.Write(byt)
+	ctx.respData = byt
 	return ctx
 }
 
 func (ctx *Context) SetStatus(code int) Responser {
-	ctx.resp.WriteHeader(code)
+	ctx.respStatusCode = code
 	return ctx
 }
 func (ctx *Context) SetOkStatus() Responser {
@@ -62,7 +62,7 @@ func (ctx *Context) Xml(obj interface{}) Responser {
 		return ctx.SetStatus(http.StatusInternalServerError)
 	}
 	ctx.SetHeader("Content-Type", "application/html")
-	ctx.resp.Write(byt)
+	ctx.respData = byt
 	return ctx
 }
 func (ctx *Context) Html(file string, obj interface{}) Responser {
@@ -82,7 +82,7 @@ func (ctx *Context) Html(file string, obj interface{}) Responser {
 func (ctx *Context) Text(format string, values ...interface{}) Responser {
 	out := fmt.Sprintf(format, values...)
 	ctx.SetHeader("Content-Type", "application/text")
-	ctx.resp.Write([]byte(out))
+	ctx.respData = []byte(out)
 	return ctx
 }
 func (ctx *Context) SetCookie(key string, val string, maxAge int, path string,
