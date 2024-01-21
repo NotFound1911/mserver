@@ -2,6 +2,7 @@ package mserver
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -38,6 +39,17 @@ func (c *Core) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	for i := len(c.middlewares) - 1; i >= 0; i-- {
 		root = c.middlewares[i](root)
 	}
+	// 第一个应该是回写响应的
+	// 因为它在调用next之后才回写响应，
+	// 所以实际上 flashResp 是最后一个步骤
+	var m Middleware = func(next HandleFunc) HandleFunc {
+		return func(ctx *Context) error {
+			next(ctx)
+			c.flashResp(ctx)
+			return nil
+		}
+	}
+	root = m(root)
 	root(ctx)
 }
 
@@ -57,6 +69,18 @@ func (c *Core) serve(ctx *Context) error {
 	}
 	handler(ctx)
 	return nil
+}
+
+// flashResp 回写响应
+func (c *Core) flashResp(ctx *Context) {
+	if ctx.respStatusCode > 0 {
+		ctx.resp.WriteHeader(ctx.respStatusCode)
+	}
+	_, err := ctx.resp.Write(ctx.respData)
+	fmt.Printf("ctx.respStatusCode:%v ctx.respData:%v\n", ctx.respStatusCode, string(ctx.respData))
+	if err != nil {
+		log.Fatalln("回写响应失败", err)
+	}
 }
 
 // Start 启动服务

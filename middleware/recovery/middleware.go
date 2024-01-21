@@ -5,17 +5,19 @@ import (
 	"net/http"
 )
 
-func Recovery() mserver.Middleware {
-	return func(next mserver.HandleFunc) mserver.HandleFunc {
+type MiddlewareBuilder struct {
+}
+
+func (m MiddlewareBuilder) Build() mserver.Middleware {
+	return func(handleFunc mserver.HandleFunc) mserver.HandleFunc {
 		return func(ctx *mserver.Context) error {
 			defer func() {
 				if err := recover(); err != nil {
 					ctx.SetStatus(http.StatusInternalServerError).Json(err)
 				}
 			}()
-			next(ctx)
+			handleFunc(ctx)
 			return nil
 		}
 	}
-
 }

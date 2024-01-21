@@ -1,3 +1,5 @@
+//go:build e2e
+
 package cost
 
 import (
@@ -6,12 +8,12 @@ import (
 	"testing"
 )
 
-func TestMiddleware_Cost(t *testing.T) {
+func TestMiddlewareBuilder_Build(t *testing.T) {
 	c := mserver.NewCore()
 	c.Get("/test/cost", func(ctx *mserver.Context) error {
 		ctx.SetStatus(http.StatusOK).Json("test cost")
 		return nil
 	})
-	c.Use(Cost())
+	c.Use(MiddlewareBuilder{}.Build())
 	c.Start(":8081")
 }
