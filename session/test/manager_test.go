@@ -17,7 +17,7 @@ func TestManager(t *testing.T) {
 	m := session.Manager{
 		CtxKey: "_sess",
 		Store:  memory.NewStore(30 * time.Second),
-		Adapter: cookie.NewAdapter("sessud",
+		Adapter: cookie.NewAdapter("sessid",
 			cookie.WithCookieOption(func(c *http.Cookie) {
 				c.HttpOnly = true
 			})),
@@ -38,6 +38,7 @@ func TestManager(t *testing.T) {
 			ctx.SetStatus(http.StatusInternalServerError).Json("set session error")
 			return err
 		}
+		ctx.SetStatus(http.StatusOK).Json("login successful")
 		return nil
 	})
 	core.Get("/resource", func(ctx *mserver.Context) error {
