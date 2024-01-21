@@ -2,7 +2,6 @@ package mserver
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -23,18 +22,36 @@ var _ Server = &Core{}
 type Core struct {
 	router
 	middlewares []Middleware
+
+	log       func(msg string, args ...any)
+	tplEngine TemplateEngine
+}
+type CoreOption func(c *Core)
+
+func CoreWithTemplateEngine(tplEngine TemplateEngine) CoreOption {
+	return func(c *Core) {
+		c.tplEngine = tplEngine
+	}
 }
 
-func NewCore() *Core {
-	return &Core{
+func NewCore(opts ...CoreOption) *Core {
+	c := &Core{
 		router:      newRouter(),
 		middlewares: []Middleware{},
+		log: func(msg string, args ...any) {
+			fmt.Printf(msg, args...)
+		},
 	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 // ServeHTTP 处理请求的入口
 func (c *Core) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	ctx := NewContext(request, writer)
+	ctx.tplEngine = c.tplEngine
 	root := c.serve
 	for i := len(c.middlewares) - 1; i >= 0; i-- {
 		root = c.middlewares[i](root)
@@ -78,7 +95,7 @@ func (c *Core) flashResp(ctx *Context) {
 	}
 	_, err := ctx.resp.Write(ctx.respData)
 	if err != nil {
-		log.Fatalln("回写响应失败", err)
+		c.log("回写响应失败", err)
 	}
 }
 

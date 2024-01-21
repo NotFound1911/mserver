@@ -18,6 +18,8 @@ type Context struct {
 	index        int // 当前请求调用到调用链的哪个节点
 	handlers     []HandleFunc
 	CustomValues map[string]any // 自定义数据
+
+	tplEngine TemplateEngine
 }
 
 // NewContext 初始化一个Context
@@ -27,6 +29,21 @@ func NewContext(r *http.Request, w http.ResponseWriter) *Context {
 		resp:  w,
 		index: -1,
 	}
+}
+
+// Render 渲染
+func (ctx *Context) Render(tplName string, data any) error {
+	// 不要这样子去做
+
+	var err error
+	respData, err := ctx.tplEngine.Render(ctx.GetRequest().Context(), tplName, data)
+	ctx.SetRespData(respData)
+	if err != nil {
+		ctx.SetStatus(http.StatusInternalServerError)
+		return err
+	}
+	ctx.SetStatus(http.StatusOK)
+	return nil
 }
 
 // SetHandlers 为context设置handlers
