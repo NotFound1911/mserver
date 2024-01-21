@@ -57,3 +57,6 @@ func (ctx *Context) SetRequest(req *http.Request) {
 func (ctx *Context) GetRespStatusCode() int {
 	return ctx.respStatusCode
 }
+func (ctx *Context) SetRespData(data []byte) {
+	ctx.respData = data
+}

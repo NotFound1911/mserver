@@ -77,7 +77,6 @@ func (c *Core) flashResp(ctx *Context) {
 		ctx.resp.WriteHeader(ctx.respStatusCode)
 	}
 	_, err := ctx.resp.Write(ctx.respData)
-	fmt.Printf("ctx.respStatusCode:%v ctx.respData:%v\n", ctx.respStatusCode, string(ctx.respData))
 	if err != nil {
 		log.Fatalln("回写响应失败", err)
 	}
