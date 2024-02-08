@@ -7,6 +7,7 @@ type Grouper interface {
 	Put(path string, handler HandleFunc)
 	Get(path string, handler HandleFunc)
 	Delete(path string, handler HandleFunc)
+	Any(path string, handler HandleFunc)
 	// Group 实现嵌套
 	Group(string string) Grouper
 }
@@ -43,7 +44,10 @@ func (g *Group) Delete(path string, handler HandleFunc) {
 	path = g.getAbsolutePrefix() + path
 	g.core.Delete(path, handler)
 }
-
+func (g *Group) Any(path string, handler HandleFunc) {
+	path = g.getAbsolutePrefix() + path
+	g.core.Any(path, handler)
+}
 func (g *Group) Group(uri string) Grouper {
 	childGroup := NewGroup(g.core, uri)
 	childGroup.parent = g

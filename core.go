@@ -134,6 +134,15 @@ func (c *Core) Delete(path string, handler HandleFunc) {
 	c.addRoute(http.MethodDelete, path, handler)
 }
 
+var anyMethods = []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch,
+	http.MethodHead, http.MethodOptions, http.MethodDelete, http.MethodConnect, http.MethodTrace}
+
+func (c *Core) Any(path string, handler HandleFunc) {
+	for _, method := range anyMethods {
+		c.addRoute(method, path, handler)
+	}
+}
+
 // 注册中间件
 func (c *Core) Use(middlewares ...Middleware) {
 	if c.middlewares == nil {
