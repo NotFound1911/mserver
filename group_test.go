@@ -11,6 +11,7 @@ func Test_Group_route(t *testing.T) {
 	core := NewCore()
 	mockHandler1 := func(ctx *Context) error { return nil }
 	mockHandler2 := func(ctx *Context) error { return nil }
+	mockHandler3 := func(ctx *Context) error { return nil }
 	aGroup := core.Group("/a")
 	{
 		aGroup.Get("/:id", mockHandler2)
@@ -21,6 +22,7 @@ func Test_Group_route(t *testing.T) {
 		{
 			bGroup.Get("/name", mockHandler2)
 		}
+		aGroup.Any("/any", mockHandler3)
 	}
 	testCases := []struct {
 		name   string
@@ -100,6 +102,30 @@ func Test_Group_route(t *testing.T) {
 				n: &node{
 					segment: "name",
 					handler: mockHandler2,
+				},
+			},
+		},
+		{
+			name:   "any get",
+			method: http.MethodGet,
+			path:   "/a/any",
+			found:  true,
+			mi: &matchNode{
+				n: &node{
+					segment: "any",
+					handler: mockHandler3,
+				},
+			},
+		},
+		{
+			name:   "any post",
+			method: http.MethodPost,
+			path:   "/a/any",
+			found:  true,
+			mi: &matchNode{
+				n: &node{
+					segment: "any",
+					handler: mockHandler3,
 				},
 			},
 		},
