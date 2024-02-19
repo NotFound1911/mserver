@@ -28,6 +28,8 @@ type Responser interface {
 	SetHeader(key string, val string) Responser
 	// SetOkStatus 设置200状态
 	SetOkStatus() Responser
+	// Header header修订
+	Header(key, value string) Responser
 }
 
 func (ctx *Context) SetHeader(key string, val string) Responser {
@@ -100,5 +102,17 @@ func (ctx *Context) SetCookie(key string, val string, maxAge int, path string,
 		Secure:   secure,
 		HttpOnly: httpOnly,
 	})
+	return ctx
+}
+
+// Header 是set和del方法的缩写，主要是重新响应的header
+// 如果 value == "",  执行`ctx.resp.Header().Set(key, value)`
+// 否则执行 `ctx.resp.Header().Set(key, value)`
+func (ctx *Context) Header(key, value string) Responser {
+	if value == "" {
+		ctx.resp.Header().Del(key)
+		return ctx
+	}
+	ctx.resp.Header().Set(key, value)
 	return ctx
 }
