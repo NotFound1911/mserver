@@ -1,7 +1,9 @@
 package mserver
 
 import (
+	"context"
 	"net/http"
+	"time"
 )
 
 type Context struct {
@@ -20,6 +22,39 @@ type Context struct {
 	CustomValues map[string]any // 自定义数据
 
 	tplEngine TemplateEngine
+	// ContextWithFallback enable fallback Context.Deadline(), Context.Done(), Context.Err() and Context.Value()
+	// when Context.Request.Context() is not nil.
+	ContextWithFallback bool
+}
+
+var _ context.Context = &Context{}
+
+func (ctx *Context) Deadline() (deadline time.Time, ok bool) {
+	if !ctx.ContextWithFallback || ctx.req == nil || ctx.req.Context() == nil {
+		return
+	}
+	return ctx.req.Context().Deadline()
+}
+
+func (ctx *Context) Done() <-chan struct{} {
+	if !ctx.ContextWithFallback || ctx.req == nil || ctx.req.Context() == nil {
+		return nil
+	}
+	return ctx.req.Context().Done()
+}
+
+func (ctx *Context) Err() error {
+	if !ctx.ContextWithFallback || ctx.req == nil || ctx.req.Context() == nil {
+		return nil
+	}
+	return ctx.req.Context().Err()
+}
+
+func (ctx *Context) Value(key any) any {
+	if !ctx.ContextWithFallback || ctx.req == nil || ctx.req.Context() == nil {
+		return nil
+	}
+	return ctx.req.Context().Value(key)
 }
 
 // NewContext 初始化一个Context
