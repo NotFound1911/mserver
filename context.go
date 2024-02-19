@@ -17,8 +17,6 @@ type Context struct {
 	params       map[string]string // url路由匹配的参数
 	MatchedRoute string
 
-	index        int // 当前请求调用到调用链的哪个节点
-	handlers     []HandleFunc
 	CustomValues map[string]any // 自定义数据
 
 	tplEngine TemplateEngine
@@ -57,13 +55,17 @@ func (ctx *Context) Value(key any) any {
 	return ctx.req.Context().Value(key)
 }
 
-// NewContext 初始化一个Context
-func NewContext(r *http.Request, w http.ResponseWriter) *Context {
-	return &Context{
-		req:   r,
-		resp:  w,
-		index: -1,
-	}
+func newContext() *Context {
+	return &Context{}
+}
+func (ctx *Context) reset() {
+	ctx.respStatusCode = 0
+	ctx.respData = nil
+	ctx.params = nil // url路由匹配的参数
+	ctx.MatchedRoute = ""
+	ctx.CustomValues = nil // 自定义数据
+	ctx.tplEngine = nil
+	ctx.ContextWithFallback = false
 }
 
 // Render 渲染
@@ -79,15 +81,6 @@ func (ctx *Context) Render(tplName string, data any) error {
 	}
 	ctx.SetStatus(http.StatusOK)
 	return nil
-}
-
-// SetHandlers 为context设置handlers
-func (ctx *Context) SetHandlers(handlers []HandleFunc) {
-	if ctx.handlers == nil {
-		ctx.handlers = handlers
-		return
-	}
-	ctx.handlers = append(ctx.handlers, handlers...)
 }
 
 // SetParams 设置参数
