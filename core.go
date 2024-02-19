@@ -3,6 +3,7 @@ package mserver
 import (
 	"fmt"
 	"net/http"
+	"sync"
 )
 
 type Server interface {
@@ -25,6 +26,8 @@ type Core struct {
 
 	log       func(msg string, args ...any)
 	tplEngine TemplateEngine
+
+	pool sync.Pool
 }
 type CoreOption func(c *Core)
 
@@ -42,6 +45,9 @@ func NewCore(opts ...CoreOption) *Core {
 			fmt.Printf(msg, args...)
 		},
 	}
+	c.pool.New = func() any {
+		return newContext()
+	}
 	for _, opt := range opts {
 		opt(c)
 	}
@@ -50,7 +56,10 @@ func NewCore(opts ...CoreOption) *Core {
 
 // ServeHTTP 处理请求的入口
 func (c *Core) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	ctx := NewContext(request, writer)
+	ctx := c.pool.Get().(*Context)
+	ctx.reset()
+	ctx.req = request
+	ctx.resp = writer
 	ctx.tplEngine = c.tplEngine
 	root := c.serve
 	for i := len(c.middlewares) - 1; i >= 0; i-- {
@@ -68,6 +77,7 @@ func (c *Core) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 	root = m(root)
 	root(ctx)
+	c.pool.Put(ctx)
 }
 
 func (c *Core) serve(ctx *Context) error {
